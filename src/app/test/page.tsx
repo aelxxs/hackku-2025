@@ -3,19 +3,23 @@ import { useState, useRef } from 'react';
 
 
 
-
+interface icdCode{
+    code:string;
+    description:string;
+}
 export default function AudioUploader() {
     const [audioFile, setAudioFile] = useState<File | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [transcription, setTranscription] = useState<string | null>(null);
+    const [icdCode, setIcdCode] = useState<icdCode[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
-        
+
         if (file) {
             setAudioFile(file);
-            
+
             // Create URL for audio preview
             const url = URL.createObjectURL(file);
             setAudioUrl(url);
@@ -33,7 +37,7 @@ export default function AudioUploader() {
         }
     };
 
-    async function handleTranscribe(){
+    async function handleTranscribe() {
         if (!audioFile) {
             alert("Please select an audio file first.");
             return;
@@ -61,10 +65,34 @@ export default function AudioUploader() {
         }
     }
 
+    async function handleICD() {
+        if(!transcription){
+            alert("Please transcribe the audio file first.");
+            return;
+        }
+        try{
+            const response = await fetch("/api/generateicdfromsoap", {
+                method: "POST",
+                body: JSON.stringify({soapNotes: transcription}),
+            });
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            const data = await response.json();
+            setTranscription("");
+            console.log(data.codes);
+            setIcdCode(data.codes);
+        }
+        catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while generating the ICD code.");
+        }
+    }
+
     return (
         <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
             <h1 className="text-2xl font-bold mb-4">Audio File Uploader</h1>
-            
+
             <div className="mb-4">
                 <label className="block text-gray-700 mb-2">
                     Select an audio file:
@@ -84,14 +112,14 @@ export default function AudioUploader() {
             </div>
 
             {audioFile && (
-                <div className="mt-4">
+                <div className="mt-4 max-h-[500px] overflow-y-scroll">
                     <p className="mb-2">
                         <span className="font-semibold">Selected file:</span> {audioFile.name}
                     </p>
                     <p className="mb-2">
                         <span className="font-semibold">Size:</span> {(audioFile.size / 1024).toFixed(2)} KB
                     </p>
-                    
+
                     <div className="mt-4">
                         <h2 className="text-lg font-semibold mb-2">Preview:</h2>
                         {audioUrl && (
@@ -101,7 +129,7 @@ export default function AudioUploader() {
                             </audio>
                         )}
                     </div>
-                    
+
                     <button
                         onClick={handleReset}
                         className="mt-4 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
@@ -113,9 +141,20 @@ export default function AudioUploader() {
                     >
                         Transcribe
                     </button>
-                    <p className='text-black'>
+                    <button onClick={handleICD}
+                        className="mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ml-2"
+                    >Generate ICD
+                    </button>
+                    <pre className='text-black'>
                         {transcription}
-                    </p>
+                    </pre>
+                    <pre className='text-black'>
+                        {icdCode.map((item, index) => (
+                            <div key={index}>
+                                <p>{item.code} : {item.description}</p>
+                            </div>
+                        ))}
+                    </pre>
                 </div>
             )}
         </div>
