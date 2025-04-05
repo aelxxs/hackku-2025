@@ -3,11 +3,19 @@ import fs from "fs"
 import OpenAI from "openai";
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
+import { GoogleGenAI } from "@google/genai";
+
+
 
 export async function POST(request: NextRequest) {
+
     const client = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
+        apiKey: process.env.OPENAI_API_KEY,
     });
+
+    const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+    })
     let tempFilePath;
     try {
         const data = await request.formData();
@@ -31,7 +39,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Transcription failed" }, { status: 500 });
         }
         else {
-            return NextResponse.json({ text: transcription.text }, { status: 200 });
+
+            const response = await ai.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents:`You will be given the audio transcription of a medical visit. Use it to generate SOAP(Subjective, Objective,Assessment,Plan) notes for the visit.
+                The SOAP notes output should be provided in a raw markdown format. Only output the soap notes. No need of any other pleasantries. Here is the transcription: ${transcription.text}`,
+            })
+            if (!response || !response.text) {
+                return NextResponse.json({ error: "SOAP generation failed" }, { status: 500 });
+            }
+            return NextResponse.json({ text: response.text }, { status: 200 });
         }
     }
     catch (error) {
