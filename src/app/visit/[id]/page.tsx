@@ -1,12 +1,13 @@
 "use client";
-
 import { ForwardRefEditor } from "@/app/components/ForwardRefEditor";
 import { Loading } from "@/app/components/Loading";
 import { calculateAge, getPatientById } from "@/app/components/PatientList";
 import { ICDWithProbability, State, Step, useAppContext } from "@/app/context-providers";
 import { AnimatePresence, motion } from "framer-motion";
+import { param } from "framer-motion/client";
 import { useRouter } from "next/navigation";
 import {
+    use,
     useEffect,
     useRef,
     useState
@@ -19,26 +20,21 @@ import { Recorder } from "./components/RecordVisit";
 export default function NewVisitorPage({ params }: { params: { id: string } }) {
     const { step, state, handleContinue, setProvider } = useAppContext();
     const router = useRouter();
+    const { id } = use(params);
+    const patient = getPatientById(id)!;
 
-    const patient = getPatientById(params.id)!;
-
-    setProvider(patient.providerID);
+    // Moved state update to useEffect
+    useEffect(() => {
+        if (patient) {
+            setProvider(patient.providerID);
+        }
+    }, [patient, setProvider]);
 
     useEffect(() => {
         if (!patient) {
             router.push("/");
         }
     }, [patient, router]);
-
-    // useEffect(() => {
-    //     const handleNavigation = () => {
-    //         router.push(`/project/${params.id}`);
-    //     };
-
-    //     if (state === "finding-icd-probability") {
-    //         handleNavigation();
-    //     }
-    // }, [state, router, params.id]);
 
     let continueButtonText = "Continue";
     if (state === "editing-soap") {
@@ -54,6 +50,10 @@ export default function NewVisitorPage({ params }: { params: { id: string } }) {
         state === "editing-icd-codes" ||
         state === "finding-icd-probability";
 
+    if (state === "visit-complete") {
+        return <VisitComplete />;
+    }
+
     return (
         <div className="sidebar">
             <div className="flex flex-col gap-6">
@@ -65,7 +65,7 @@ export default function NewVisitorPage({ params }: { params: { id: string } }) {
                     <Playground step={step} state={state} />
                     {showContinueButton && (
                         <button
-                            className="px-4 py-2 text-white bg-blue-600 rounded-full disabled:opacity-50"
+                            className="px-4 py-2 text-white bg-blue-600 rounded-full disabled:opacity-50 cursor-pointer"
                             onClick={handleContinue}
                             disabled={
                                 state === "generating-soap-document" ||
@@ -117,7 +117,7 @@ export default function NewVisitorPage({ params }: { params: { id: string } }) {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <p className="text-sm text-gray-500">Provider ID</p>
+                                    <p className="text-sm text-gray-500">Insurance Provider ID</p>
                                     <p className="font-mono font-medium text-purple-600">
                                         #{patient.providerID}
                                     </p>
@@ -130,6 +130,72 @@ export default function NewVisitorPage({ params }: { params: { id: string } }) {
         </div>
     );
 }
+
+
+const VisitComplete = () => {
+    const { setState, soapData, icdsWithProbability } = useAppContext();
+    const [localSoapData, setLocalSoapData] = useState(soapData);
+    const router = useRouter();
+
+    const handleStartNewVisit = () => {
+        router.push("/");
+        setState("start-visit");
+    };
+
+    return (
+        <div className="flex flex-col w-full h-full p-6 rounded-lg">
+            {/* Top Section */}
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800">Visit Complete</h2>
+                    <p className="text-md text-gray-600 mt-1">
+                        Review the visit summary and ICD code analysis below.
+                    </p>
+                </div>
+                <button
+                    onClick={handleStartNewVisit}
+                    className="px-5 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+                >
+                    Start New Visit
+                </button>
+            </div>
+
+            {/* Side-by-side Layout */}
+            <div className="flex flex-col md:flex-row gap-6 flex-1 overflow-hidden">
+                {/* Editable SOAP */}
+                <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    <h3 className="font-semibold text-lg bg-gray-50 text-gray-800 px-4 py-3 border-b border-gray-200">
+                        Visit Summary (SOAP)
+                    </h3>
+                    <div className="h-full p-2 overflow-y-auto">
+                        <ForwardRefEditor
+                            className="w-full h-full text-gray-700 focus:outline-none"
+                            markdown={localSoapData}
+                            onChange={(value) => setLocalSoapData(value)}
+                            contentEditableClassName="prose h-full overflow-y-auto"
+                        />
+                    </div>
+                </div>
+
+                {/* ICD Probabilities */}
+                <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    <h3 className="font-semibold text-lg bg-gray-50 text-gray-800 px-4 py-3 border-b border-gray-200">
+                        ICD Code Analysis
+                    </h3>
+                    <div className="p-4 overflow-y-auto">
+                        <div className="flex flex-col gap-4">
+                            {icdsWithProbability.map((icd) => (
+                                <ICDProbabilityBlock key={icd.code} {...icd} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 
 const loadingStates = {
     [Step.RecordOrUploadVisitRecording]: {
@@ -169,6 +235,7 @@ const loadingStates = {
             "Generating probability matrix"
         ]
     }
+
 };
 
 
@@ -216,7 +283,7 @@ const EditSOAP = () => {
     return (
         <div className="flex flex-col items-center justify-center w-full h-full overflow-auto gap-4">
             <ForwardRefEditor
-                className="w-full h-full text-gray-700 bg-transparent border-none focus:outline-none"
+                className="w-full h-full text-gray-700 bg-transparent border-none focus:outline-none p-3"
                 markdown={soapData}
                 onChange={(value) => setSoapData(value)}
                 contentEditableClassName="prose h-full overflow-y-auto"
@@ -472,6 +539,7 @@ const ICDProbabilityBlock = ({ code, description, probability }: ICDWithProbabil
 
     const colorClasses = getColorClasses(percentage);
 
+
     return (
         <div className="relative bg-white border border-gray-200 rounded-lg p-4 pr-12 hover:shadow-md transition-shadow">
             <div className="flex flex-col gap-3">
@@ -510,6 +578,10 @@ const FindICDProbability = () => {
     const { icdsWithProbability } = useAppContext();
     const { provider } = useAppContext(); // Assuming you have this in context
 
+
+    const orderedICDs = icdsWithProbability.sort((a, b) => b.probability - a.probability);
+
+    console.log(icdsWithProbability);
     return (
         <div className="w-full h-full p-4">
             <div className="mb-6 max-w-lg">
@@ -522,13 +594,13 @@ const FindICDProbability = () => {
             </div>
             <div>
                 <p className="text-sm text-gray-500 mb-2">
-                    Provider ID: <span className="font-mono font-medium text-purple-600">
+                    Insurance Provider ID: <span className="font-mono font-medium text-purple-600">
                         #{provider}</span>
                 </p>
             </div>
 
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-                {icdsWithProbability.map((icd) => (
+                {orderedICDs.map((icd) => (
                     <ICDProbabilityBlock key={icd.code} {...icd} />
                 ))}
             </div>

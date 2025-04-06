@@ -15,6 +15,17 @@ type PatientData = {
 
 export const patients = [
     {
+        "PatientID": "b531b75c-5fcc-4560-9364-81510ee70fe4",
+        "fname": "Robert",
+        "lname": "Kim",
+        "preferredName": "Robert",
+        "dateOfBirth": "1968-01-19",
+        "sex": "M",
+        "providerID": "POI314",
+        "phoneNum": "990-890-3037",
+        "email": "yateskenneth@hotmail.com"
+    },
+    {
         "PatientID": "20f2e103-cda3-4038-9b8b-5a4287164d6a",
         "fname": "Samantha",
         "lname": "Lawson",
@@ -36,17 +47,7 @@ export const patients = [
         "phoneNum": "700-907-5416",
         "email": "lynn72@hotmail.com"
     },
-    {
-        "PatientID": "b531b75c-5fcc-4560-9364-81510ee70fe4",
-        "fname": "Robert",
-        "lname": "George",
-        "preferredName": "Robert",
-        "dateOfBirth": "1968-01-19",
-        "sex": "M",
-        "providerID": "POI314",
-        "phoneNum": "990-890-3037",
-        "email": "yateskenneth@hotmail.com"
-    },
+
     {
         "PatientID": "5b82821a-f582-4e85-8d6f-68dbe7245721",
         "fname": "Sonya",
@@ -283,7 +284,7 @@ const PatientCard = ({ patient }: { patient: PatientData }) => {
                         </div>
 
                         <div className="space-y-1">
-                            <p className="text-gray-500">Provider ID</p>
+                            <p className="text-gray-500">Insurance Provider ID</p>
                             <p className="font-mono font-medium text-purple-600">
                                 #{patient.providerID}
                             </p>

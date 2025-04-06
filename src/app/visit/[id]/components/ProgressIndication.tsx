@@ -51,14 +51,14 @@ export const ProgressIndication = ({ step }: { step: Step }) => {
                         )}
                     </span>
 
-                    <motion.h3
-                        className={`font-medium leading-tight ${step === +key && "text-black"
+                    <motion.p
+                        className={`font-medium text-l mb-2 leading-tight ${step === +key && "text-black"
                             }`}
                         initial={{ color: step === +key ? "black" : "gray" }}
                         animate={{ color: step === +key ? "black" : "gray" }}
                     >
                         {value.title}
-                    </motion.h3>
+                    </motion.p>
                     {step === +key && (
                         <motion.div
                             className="text-sm overflow-hidden mt-1"

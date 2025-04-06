@@ -13,6 +13,7 @@ export enum Step {
     GenerateVisitSOAPDocument,
     CalculateICDCodesForVisit,
     FindProbabilityOfICDCode,
+    VisitComplete,
 }
 
 export type State =
@@ -22,7 +23,8 @@ export type State =
     | "editing-soap"
     | "determining-icd-codes"
     | "editing-icd-codes"
-    | "finding-icd-probability";
+    | "finding-icd-probability"
+    | "visit-complete";
 
 
 export type ICDData = {
@@ -92,11 +94,11 @@ const mockIcdWithProbability: ICDWithProbability[] = [
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [step, setStep] = useState(Step.RecordOrUploadVisitRecording);
-    const [state, setState] = useState<State>("finding-icd-probability");
+    const [state, setState] = useState<State>("start-visit");
     const [soapData, setSoapData] = useState("");
     const [icdData, setIcdData] = useState<ICDData[]>([]);
     const [provider, setProvider] = useState<string | null>(null);
-    const [icdsWithProbability, setIcdsWithProbability] = useState<ICDWithProbability[]>(mockIcdWithProbability);
+    const [icdsWithProbability, setIcdsWithProbability] = useState<ICDWithProbability[]>([]);
 
     useEffect(() => {
         // Update step based on state
@@ -118,6 +120,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 break;
             case "finding-icd-probability":
                 setStep(Step.FindProbabilityOfICDCode);
+                break;
+            case "visit-complete":
+                setStep(Step.VisitComplete);
                 break;
             default:
                 break;
@@ -199,7 +204,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 },
                 body: JSON.stringify({
                     codes,
-                    provider
+                    providerID: provider
                 }),
             });
 
@@ -218,6 +223,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             }));
             setIcdsWithProbability(rates);
             console.log("ICD Approval Rates:", result);
+            setStep(Step.VisitComplete)
         } catch (error) {
             console.error("Error checking ICD approval rates:", error);
             alert("Failed to check ICD approval rates. Please try again.");
@@ -256,6 +262,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 case Step.FindProbabilityOfICDCode:
                     // Handle the logic for this step
                     break;
+                case Step.VisitComplete:
+                    setState("visit-complete");
                 default:
                     break;
             }

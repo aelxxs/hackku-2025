@@ -1,8 +1,12 @@
 import "@mdxeditor/editor/style.css";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProvider } from "./context-providers";
 import "./globals.css";
+
+
+import "@mdxeditor/editor/style.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,8 +33,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <div className="flex flex-col gap-10 px-8">
             <header className="mt-6">
               <nav className="flex gap-4">
-                <a href="/" className="font-black text-3xl">
-                  Logo
+                <a href="/" className="font-bold text-3xl">
+                  EirAI <span>
+                    <span className="text-xs font-normal text-gray-500">v0.1 — </span>
+                    {/* divicder */}
+
+                    <span className="text-xs font-normal text-gray-500">
+                      {/* catchphrase */}
+                      Less headaches, more caring.
+                    </span>
+                  </span>
                 </a>
               </nav>
             </header>
