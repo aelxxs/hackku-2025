@@ -3,7 +3,7 @@
 import { ForwardRefEditor } from "@/app/components/ForwardRefEditor";
 import { Loading } from "@/app/components/Loading";
 import { calculateAge, getPatientById } from "@/app/components/PatientList";
-import { State, Step, useAppContext } from "@/app/context-providers";
+import { ICDWithProbability, State, Step, useAppContext } from "@/app/context-providers";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -17,10 +17,12 @@ import { Recorder } from "./components/RecordVisit";
 
 
 export default function NewVisitorPage({ params }: { params: { id: string } }) {
-    const { step, state, handleContinue } = useAppContext();
+    const { step, state, handleContinue, setProvider } = useAppContext();
     const router = useRouter();
 
     const patient = getPatientById(params.id)!;
+
+    setProvider(patient.providerID);
 
     useEffect(() => {
         if (!patient) {
@@ -28,15 +30,15 @@ export default function NewVisitorPage({ params }: { params: { id: string } }) {
         }
     }, [patient, router]);
 
-    useEffect(() => {
-        const handleNavigation = () => {
-            router.push(`/project/${params.id}`);
-        };
+    // useEffect(() => {
+    //     const handleNavigation = () => {
+    //         router.push(`/project/${params.id}`);
+    //     };
 
-        if (state === "finding-icd-probability") {
-            handleNavigation();
-        }
-    }, [state, router, params.id]);
+    //     if (state === "finding-icd-probability") {
+    //         handleNavigation();
+    //     }
+    // }, [state, router, params.id]);
 
     let continueButtonText = "Continue";
     if (state === "editing-soap") {
@@ -454,28 +456,89 @@ const ICDBlock = ({ code, description, onDelete }: {
 // Helper hook for debouncing
 
 
-const FindICDProbability = () => {
-    const { soapData, icdData } = useAppContext();
+
+
+const ICDProbabilityBlock = ({ code, description, probability }: ICDWithProbability) => {
+    const percentage = Math.round(probability * 100);
+
+    // Color determination
+    const getColorClasses = (percent: number) => {
+        if (percent >= 90) return 'from-green-400 to-green-600';
+        if (percent >= 75) return 'from-green-300 to-green-500';
+        if (percent >= 60) return 'from-yellow-400 to-yellow-600';
+        if (percent >= 45) return 'from-orange-400 to-orange-600';
+        return 'from-red-400 to-red-600';
+    };
+
+    const colorClasses = getColorClasses(percentage);
+
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full gap-4">
-            <p>SOAP Document:</p>
-            <textarea
-                className="w-full h-32 border rounded p-2"
-                value={soapData}
-                readOnly
-            ></textarea>
-            <p>ICD Codes:</p>
-            {/* <textarea
-                className="w-full h-32 border rounded p-2"
-                value={icdData}
-                readOnly
-            ></textarea> */}
-            <p>Probability Analysis:</p>
-            {/* Add your probability analysis component here */}
-            <div>[Probability Analysis Component Placeholder]</div>
+        <div className="relative bg-white border border-gray-200 rounded-lg p-4 pr-12 hover:shadow-md transition-shadow">
+            <div className="flex flex-col gap-3">
+                {/* Code + Description */}
+                <div className="flex items-start gap-3">
+                    <span className="text-sm font-semibold bg-blue-50 text-blue-800 px-2.5 py-1.5 rounded-md">
+                        {code}
+                    </span>
+                    <p className="text-sm text-gray-600 flex-1">{description}</p>
+                </div>
+
+                {/* Probability Meter */}
+                <div className="space-y-1.5">
+                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div
+                            className={`h-full bg-gradient-to-r ${colorClasses} rounded-full`}
+                            style={{ width: `${percentage}%` }}
+                        />
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs font-medium text-gray-600">
+                            Approval Confidence
+                        </span>
+                        <span className="text-xs font-semibold text-gray-700">
+                            {percentage}%
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
 
+const FindICDProbability = () => {
+    const { icdsWithProbability } = useAppContext();
+    const { provider } = useAppContext(); // Assuming you have this in context
 
+    return (
+        <div className="w-full h-full p-4">
+            <div className="mb-6 max-w-lg">
+                <h2 className="text-2xl font-semibold mb-2">
+                    ICD Code Approval Rates
+                </h2>
+                <p className="text-gray-600 text-sm">
+                    The confidence levels are based on historical data and may vary depending on specific patient conditions.
+                </p>
+            </div>
+            <div>
+                <p className="text-sm text-gray-500 mb-2">
+                    Provider ID: <span className="font-mono font-medium text-purple-600">
+                        #{provider}</span>
+                </p>
+            </div>
 
+            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+                {icdsWithProbability.map((icd) => (
+                    <ICDProbabilityBlock key={icd.code} {...icd} />
+                ))}
+            </div>
+
+            {/* Optional Loading State */}
+            {icdsWithProbability.length === 0 && (
+                <div className="flex justify-center items-center h-full">
+                    <p className="text-gray-500">Calculating probabilities...</p>
+                </div>
+            )}
+        </div>
+    );
+};
