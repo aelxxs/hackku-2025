@@ -148,7 +148,7 @@ const Playground = ({ step, state }: { step: Step; state: State }) => {
 const EditSOAP = () => {
     const { soapData, setSoapData } = useAppContext();
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full gap-4">
+        <div className="flex flex-col items-center justify-center w-full h-full overflow-auto gap-4">
             {/* <p>Edit SOAP Document</p>
             <textarea
                 className="w-full h-64 border rounded p-2"
@@ -160,7 +160,7 @@ const EditSOAP = () => {
                 className="w-full h-full text-gray-700 bg-transparent border-none focus:outline-none"
                 markdown={soapData}
                 onChange={(value) => setSoapData(value)}
-                contentEditableClassName="prose h-[30rem] overflow-y-auto"
+                contentEditableClassName="prose h-full overflow-y-auto"
             />
         </div>
     );
@@ -169,8 +169,7 @@ const EditSOAP = () => {
 const EditICDCodes = () => {
     const { icdData } = useAppContext();
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full gap-4">
-            <p>Edit ICD Codes</p>
+        <div className="flex flex-col items-center justify-center w-full h-full overflow-auto gap-4">
             {icdData.map((icd, index) => (
                 <ICDBlock
                     key={index}
