@@ -5,27 +5,27 @@ import { motion } from "framer-motion";
 
 const steps = {
     [Step.RecordOrUploadVisitRecording]: {
-        title: "Start Visit Recording",
-        description: "Record or upload a visit recording to get started.",
+        title: "Visit Documentation Initiation",
+        description: "Begin by recording a new consultation or uploading existing audio for analysis",
         icon: MicrophoneIcon,
     },
     [Step.GenerateVisitSOAPDocument]: {
-        title: "Generate Visit SOAP Document",
-        description: "Generate a SOAP document for the visit.",
+        title: "Clinical Documentation Automation",
+        description: "AI-powered generation of SOAP notes from consultation audio",
         icon: DocumentIcon,
     },
     [Step.CalculateICDCodesForVisit]: {
-        title: "Calculate ICD Codes for Visit",
-        description: "Edit and refine the ICD codes.",
+        title: "Diagnostic Code Optimization",
+        description: "Review and refine automatically suggested ICD codes for accuracy",
         icon: FolderIcon,
     },
     [Step.FindProbabilityOfICDCode]: {
-        title: "Find probability of ICD code",
-        description:
-            "Statistical analysis based off the patients health records and find the chances of each ICD being approved.",
+        title: "Diagnostic Validation Analysis",
+        description: "Predictive modeling of code approval likelihood based on clinical history",
         icon: StarIcon,
     },
 };
+
 
 
 export const ProgressIndication = ({ step }: { step: Step }) => {
@@ -50,6 +50,7 @@ export const ProgressIndication = ({ step }: { step: Step }) => {
                             <value.icon className="w-5 h-5 stroke-1.5" />
                         )}
                     </span>
+
                     <motion.h3
                         className={`font-medium leading-tight ${step === +key && "text-black"
                             }`}
