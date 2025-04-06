@@ -25,9 +25,15 @@ export type State =
     | "finding-icd-probability";
 
 
-type ICDData = {
+export type ICDData = {
     code: string;
     description: string;
+}
+
+export type ICDWithProbability = {
+    code: string;
+    description: string;
+    probability: number;
 }
 
 type AppContextType = {
@@ -37,6 +43,10 @@ type AppContextType = {
     setState: (state: State) => void;
     soapData: string;
     setSoapData: (soapData: string) => void;
+    provider: string | null;
+    setProvider: (provider: string | null) => void;
+    icdsWithProbability: ICDWithProbability[];
+    setIcdsWithProbability: (icdsWithProbability: ICDWithProbability[]) => void;
     icdData: ICDData[];
     setIcdData: (icdData: ICDData[]) => void;
     handleStartVisit: () => void;
@@ -44,6 +54,7 @@ type AppContextType = {
     handleConfirmSOAP: () => Promise<void>;
     handleConfirmICD: () => Promise<void>;
     handleContinue: () => void;
+
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -56,11 +67,36 @@ export const useAppContext = () => {
     return context;
 };
 
+const mockIcdWithProbability: ICDWithProbability[] = [
+    {
+        code: "A00",
+        description: "Cholera due to Vibrio cholerae 01, biovar cholerae",
+        probability: 0.95,
+    },
+    {
+        code: "A01",
+        description: "Typhoid and paratyphoid fevers",
+        probability: 1,
+    },
+    {
+        code: "A02",
+        description: "Other salmonella infections",
+        probability: 0.25,
+    },
+    {
+        code: "A03",
+        description: "Shigellosis",
+        probability: 0.60,
+    },
+]
+
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [step, setStep] = useState(Step.RecordOrUploadVisitRecording);
-    const [state, setState] = useState<State>("start-visit");
+    const [state, setState] = useState<State>("finding-icd-probability");
     const [soapData, setSoapData] = useState("");
-    const [icdData, setIcdData] = useState<ICDData[]>([])
+    const [icdData, setIcdData] = useState<ICDData[]>([]);
+    const [provider, setProvider] = useState<string | null>(null);
+    const [icdsWithProbability, setIcdsWithProbability] = useState<ICDWithProbability[]>(mockIcdWithProbability);
 
     useEffect(() => {
         // Update step based on state
@@ -154,20 +190,33 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const handleConfirmICD = useCallback(async () => {
         setState("finding-icd-probability");
         try {
-            const response = await fetch("/checkICDApprovalRates", {
+
+            const codes = icdData.map((icd) => icd.code);
+            const response = await fetch("/api/getapprovalrates", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ icdCodes: icdData }),
+                body: JSON.stringify({
+                    codes,
+                    provider
+                }),
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            // { rates: // [[code, rate], ...] }
+
             const result = await response.json();
-            // Handle the approval rates as needed
+
+            const rates = result.rates.map(([code, rate]: [string, number]) => ({
+                code,
+                description: icdData.find((icd) => icd.code === code)?.description || "",
+                probability: rate,
+            }));
+            setIcdsWithProbability(rates);
             console.log("ICD Approval Rates:", result);
         } catch (error) {
             console.error("Error checking ICD approval rates:", error);
@@ -188,6 +237,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         handleStopVisit,
         handleConfirmSOAP,
         handleConfirmICD,
+        provider,
+        setProvider,
+        icdsWithProbability,
+        setIcdsWithProbability,
         handleContinue: () => {
             // based on the current step, you can define what to do next
             switch (step) {
