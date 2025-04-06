@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 export const AnimatedAudioWave = ({ animate }: { animate?: boolean }) => {
-    const bars = Array.from({ length: 30 }, (_, i) => {
+    const bars = Array.from({ length: 45 }, (_, i) => {
         const randomHeight = () => Math.random() * 75 + 20;
         return (
             <motion.div
