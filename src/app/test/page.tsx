@@ -98,7 +98,7 @@ export default function AudioUploader() {
         try{
             const response = await fetch("/api/getapprovalrates", {
                 method: "POST",
-                body: JSON.stringify({codes: icdCode.map((item) => item.code), providerID: "IND901"}),
+                body: JSON.stringify({codes: icdCode.map((item) => item.code), providerID: "BLU189"}),
             });
             if (!response.ok) {
                 throw new Error("Network response was not ok");
