@@ -13,6 +13,7 @@ export default function AudioUploader() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [transcription, setTranscription] = useState<string | null>(null);
     const [icdCode, setIcdCode] = useState<icdCode[]>([]);
+    const [rates,setRates] = useState<String[][]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -89,6 +90,29 @@ export default function AudioUploader() {
         }
     }
 
+    async function handleapproval() {
+        if(!icdCode){
+            alert("Please generate the ICD codes first.");
+            return;
+        }
+        try{
+            const response = await fetch("/api/getapprovalrates", {
+                method: "POST",
+                body: JSON.stringify({codes: icdCode.map((item) => item.code), providerID: "IND901"}),
+            });
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            const data = await response.json();
+            console.log(data.rates);
+            setRates(data.rates);
+        }
+        catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while generating the approval rates.");
+        }
+    }
+
     return (
         <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
             <h1 className="text-2xl font-bold mb-4">Audio File Uploader</h1>
@@ -145,6 +169,10 @@ export default function AudioUploader() {
                         className="mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ml-2"
                     >Generate ICD
                     </button>
+                    <button onClick={handleapproval}
+                        className="mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ml-2"
+                    >Approval Rates
+                    </button>
                     <pre className='text-black'>
                         {transcription}
                     </pre>
@@ -152,6 +180,13 @@ export default function AudioUploader() {
                         {icdCode.map((item, index) => (
                             <div key={index}>
                                 <p>{item.code} : {item.description}</p>
+                            </div>
+                        ))}
+                    </pre>
+                    <pre>
+                        {rates.map((item, index) => (
+                            <div key={index}>
+                                <p>{item[0]} : {item[1]}%</p>
                             </div>
                         ))}
                     </pre>
