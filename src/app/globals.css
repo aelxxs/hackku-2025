@@ -1,26 +1,94 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	--background: #ffffff;
+	--foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	background: var(--background);
+	color: var(--foreground);
+}
+
+@layer utilities {
+	.text-balance {
+		text-wrap: balance;
+	}
+}
+
+.input {
+	@apply bg-white border border-gray-300 shadow-sm px-5 py-3 rounded-full;
+}
+
+.input-container {
+	display: flex;
+	align-items: center;
+}
+
+.attach-button {
+	margin-left: 10px;
+	background-color: #4caf50;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	cursor: pointer;
+	border-radius: 5px;
+}
+
+.file-upload-label {
+	cursor: pointer;
+}
+
+@layer utilities {
+	/* Chrome, Safari and Opera */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+
+	.no-scrollbar {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+}
+
+.sidebar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--gutter, 1rem);
+}
+.sidebar > :first-child {
+	flex-basis: 16rem;
+	flex-grow: 1;
+}
+.sidebar > :last-child {
+	flex-basis: 0;
+	flex-grow: 999;
+	min-inline-size: 65%;
+}
+
+.grid-layout {
+	display: grid;
+	grid-gap: var(--gutter, 1rem);
+	--minimum: 20ch;
+}
+
+@supports (width: min(var(--minimum), 100%)) {
+	.grid-layout {
+		grid-template-columns: repeat(auto-fit, minmax(min(var(--minimum), 100%), 1fr));
+	}
+}
+
+.prose {
+	font-size: 0.85rem;
 }

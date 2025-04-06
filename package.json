@@ -11,10 +11,16 @@
   "dependencies": {
     "@google/genai": "^0.7.0",
     "@supabase/supabase-js": "^2.49.4",
+    "@heroicons/react": "^2.2.0",
+    "@mdxeditor/editor": "^3.29.2",
+    "classnames": "^2.5.1",
+    "framer-motion": "^12.6.3",
     "next": "15.2.4",
+    "node-fetch": "^3.3.2",
     "openai": "^4.91.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-media-recorder": "^1.7.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
