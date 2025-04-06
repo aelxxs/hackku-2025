@@ -128,25 +128,47 @@ export default function NewVisitorPage({ params }: { params: { id: string } }) {
         </div>
     );
 }
+
 const loadingStates = {
     [Step.RecordOrUploadVisitRecording]: {
-        message: "Loading Visit Recording",
-        subMessage: "Please wait while we load the visit recording.",
+        message: "Processing Visit Recording",
+        subMessage: "Loading and analyzing audio data...",
+        progressSteps: [
+            "Reading audio transcription",
+            "Extracting relevant keywords",
+            "Preparing for SOAP generation"
+        ]
     },
     [Step.GenerateVisitSOAPDocument]: {
-        message: "Generating Visit SOAP Document",
-        subMessage: "Please wait while we generate the visit SOAP document.",
+        message: "Generating SOAP Document",
+        subMessage: "Organizing clinical findings...",
+        progressSteps: [
+            "Structuring subjective data",
+            "Formatting objective metrics",
+            "Analyzing assessment patterns",
+            "Creating plan recommendations"
+        ]
     },
     [Step.CalculateICDCodesForVisit]: {
-        message: "Calculating ICD Codes for Visit",
-        subMessage: "Please wait while we calculate the ICD codes for the visit.",
+        message: "Calculating ICD Codes",
+        subMessage: "Matching conditions to classifications...",
+        progressSteps: [
+            "Identifying key diagnoses",
+            "Cross-referencing medical databases",
+            "Validating code accuracy"
+        ]
     },
     [Step.FindProbabilityOfICDCode]: {
-        message: "Finding Probability of ICD Code",
-        subMessage:
-            "Analyzing patient data to determine the probability of each ICD code.",
-    },
+        message: "Analyzing Code Probability",
+        subMessage: "Calculating diagnostic confidence...",
+        progressSteps: [
+            "Reviewing patient history",
+            "Comparing symptom patterns",
+            "Generating probability matrix"
+        ]
+    }
 };
+
 
 const Playground = ({ step, state }: { step: Step; state: State }) => {
     return (
@@ -166,6 +188,8 @@ const Playground = ({ step, state }: { step: Step; state: State }) => {
                         <Loading
                             message={loadingStates[step].message}
                             subMessage={loadingStates[step].subMessage}
+                            progressSteps={loadingStates[step].progressSteps}
+                            duration={3500}
                         />
                     )}
                     {state === "editing-soap" && <EditSOAP />}
@@ -173,6 +197,8 @@ const Playground = ({ step, state }: { step: Step; state: State }) => {
                         <Loading
                             message={loadingStates[step].message}
                             subMessage={loadingStates[step].subMessage}
+                            progressSteps={loadingStates[step].progressSteps}
+                            duration={350}
                         />
                     )}
                     {state === "editing-icd-codes" && <EditICDCodes />}
