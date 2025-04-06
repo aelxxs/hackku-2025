@@ -24,9 +24,11 @@ export async function POST(request: NextRequest) {
             The output should just be a string of comma sepearated singulal medical terms.
             They must be single words.
             The keywords should be relevant to the SOAP notes provided.
+            There should be one keyword that is directly taken from the CHIEF COMPLAINT section of the SOAP notes.
             The keywords should as specific as possible but single words.
             The keywords should be related to the particular organ/organs of the body.
-            Avoid common words like "Evaluation" "Dysfunction" or any other words that are a common filler word in medical diagnoses.
+            Avoid common words like "Evaluation" or "Dysfunction" or any other words that are a common filler word in medical diagnoses.
+            Only use adjective words if they are relevant to the organ/organs of the body.
             There should be no other text in the output.
             Since the dataset is huge, limit yourself to 5 keywords only.
             Here are the SOAP notes: ${soapNotes}`,
@@ -39,12 +41,14 @@ export async function POST(request: NextRequest) {
         
         await Promise.all(
             keywords.map(async (keyword)=>{
+                
                 const {data,error} = await supabase.from("icdCodes").select("*").ilike("description",`%${keyword}%`);
-                if (error) {
-                    console.error("Error fetching ICD codes:", error);
-                    return NextResponse.json({ error: "Error fetching ICD codes" }, { status: 500 });
-                }
+                // if (error) {
+                //     console.error("Error fetching ICD codes:", error);
+                //     return NextResponse.json({ error: "Error fetching ICD codes" }, { status: 500 });
+                // }
                 if (data && data.length > 0) {
+                    console.log("Keyword: ", keyword)
                     console.log(data.length)
                     console.log("======================")
                     data.map((item)=>{
