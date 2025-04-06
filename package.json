@@ -21,7 +21,8 @@
     "openai": "^4.91.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-media-recorder": "^1.7.1"
+    "react-media-recorder": "^1.7.1",
+    "use-debounce": "^10.0.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

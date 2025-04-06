@@ -92,3 +92,14 @@ body {
 .prose {
 	font-size: 0.85rem;
 }
+
+@layer components {
+	.smooth-radius-search {
+		border-radius: 9999px;
+		transition: border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.smooth-radius-search:focus {
+		border-radius: 12px;
+	}
+}
