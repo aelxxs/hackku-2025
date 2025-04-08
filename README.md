@@ -21,11 +21,10 @@
 
 ## 🧠 Tech Stack
 
-- **Frontend**: (To be updated)
-- **Backend**: Python, Flask/FastAPI (optional)
-- **AI Models**: Whisper (speech-to-text), spaCy/NLP for note structuring, custom ML for code classification
-- **Data**: Custom dataset simulating 1.5M+ historical claims and all ICD-10 codes
-- **Infrastructure**: Docker, GitHub Actions (CI/CD planned)
+- **Frontend**: NextJS, Framer-motion
+- **Backend**: PostgreSQL (supabase)
+- **AI Models**: Open AI Speech Transcription (speech-to-text), Google Gemini for note structuring
+- **Data**: Custom mock dataset simulating 1.5M+ historical claims and all ICD-10 codes
 
 ## Dataset Highlights
 
